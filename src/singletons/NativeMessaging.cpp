@@ -29,12 +29,16 @@ namespace ipc = boost::interprocess;
 
 #define EXTENSION_ID "glknmaideaikkmemifbfkhnomoknepka"
 #define MESSAGE_SIZE 1024
+#define NATIVE_HOST_NAME "com.chatterino.chatterino"
 
 namespace chatterino {
 
-void registerNmManifest(Paths &paths, const QString &manifestFilename,
-                        const QString &registryKeyName,
-                        const QJsonDocument &document);
+void registerWindowsNmManifest(Paths &paths, const QString &manifestFilename,
+                               const QString &registryKeyName,
+                               const QJsonDocument &document);
+
+void registerMacNmManifest(const QString &manifestLocation,
+                           const QJsonDocument &document);
 
 void registerNmHost(Paths &paths)
 {
@@ -43,7 +47,7 @@ void registerNmHost(Paths &paths)
 
     auto getBaseDocument = [&] {
         QJsonObject obj;
-        obj.insert("name", "com.chatterino.chatterino");
+        obj.insert("name", NATIVE_HOST_NAME);
         obj.insert("description", "Browser interaction with chatterino.");
         obj.insert("path", QCoreApplication::applicationFilePath());
         obj.insert("type", "stdio");
@@ -61,10 +65,20 @@ void registerNmHost(Paths &paths)
         obj.insert("allowed_origins", allowed_origins_arr);
         document.setObject(obj);
 
-        registerNmManifest(paths, "/native-messaging-manifest-chrome.json",
-                           "HKCU\\Software\\Google\\Chrome\\NativeMessagingHost"
-                           "s\\com.chatterino.chatterino",
-                           document);
+#ifdef Q_OS_WIN
+        registerWindowsNmManifest(
+            paths, "/native-messaging-manifest-chrome.json",
+            "HKCU\\Software\\Google\\Chrome\\NativeMessagingHost"
+            "s\\" +
+                NATIVE_HOST_NAME,
+            document);
+#endif
+#ifdef Q_OS_MACOS
+        registerMacNmManifest(QDir::homePath() +
+                                  "/Library/Application Support/Google/Chrome/"
+                                  "NativeMessagingHosts/",
+                              document);
+#endif
     }
 
     // firefox
@@ -76,16 +90,25 @@ void registerNmHost(Paths &paths)
         obj.insert("allowed_extensions", allowed_extensions);
         document.setObject(obj);
 
-        registerNmManifest(paths, "/native-messaging-manifest-firefox.json",
-                           "HKCU\\Software\\Mozilla\\NativeMessagingHosts\\com."
-                           "chatterino.chatterino",
-                           document);
+#ifdef Q_OS_WIN
+        registerWindowsNmManifest(
+            paths, "/native-messaging-manifest-firefox.json",
+            "HKCU\\Software\\Mozilla\\NativeMessagingHosts\\" +
+                NATIVE_HOST_NAME,
+            document);
+#endif
+#ifdef Q_OS_MAC
+        registerMacNmManifest(
+            QDir::homePath() +
+                "/Library/Application Support/Mozilla/NativeMessagingHosts/",
+            document);
+#endif
     }
 }
 
-void registerNmManifest(Paths &paths, const QString &manifestFilename,
-                        const QString &registryKeyName,
-                        const QJsonDocument &document)
+void registerWindowsNmManifest(Paths &paths, const QString &manifestFilename,
+                               const QString &registryKeyName,
+                               const QJsonDocument &document)
 {
     (void)registryKeyName;
 
@@ -101,6 +124,16 @@ void registerNmManifest(Paths &paths, const QString &manifestFilename,
         QProcess::execute("REG ADD \"" + registryKeyName + "\" /ve /t REG_SZ /d \"" + manifestPath + "\" /f");
 // clang-format on
 #endif
+}
+
+void registerMacNmManifest(const QString &manifestLocation,
+                           const QJsonDocument &document)
+{
+    QString manifestPath = manifestLocation + NATIVE_HOST_NAME + ".json";
+    QFile file(manifestPath);
+    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    file.write(document.toJson());
+    file.flush();
 }
 
 std::string &getNmQueueName(Paths &paths)
@@ -246,6 +279,7 @@ void NativeMessagingServer::ReceiverThread::handleMessage(
     }
     else if (action == "detach")
     {
+#ifdef USEWINSDK
         QString winId = root.value("winId").toString();
 
         if (winId.isNull())
@@ -254,7 +288,6 @@ void NativeMessagingServer::ReceiverThread::handleMessage(
             return;
         }
 
-#ifdef USEWINSDK
         postToThread([winId] {
             qDebug() << "NW detach";
             AttachedWindow::detach(winId);
