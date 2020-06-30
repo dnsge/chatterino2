@@ -82,9 +82,10 @@
     </div>
 
     <script type="text/javascript">
+      var port = '{{ port }}';
       var clientID = 'cje24hf0084myhm7gdoor9gqw8hcx5';
-      var redirectURI = 'http://localhost:48920/login';
-      var tokenURI = 'http://localhost:48920/token'
+      var redirectURI = 'http://localhost:' + port + '/login';
+      var tokenURI = 'http://localhost:' + port + '/token'
       var scopes = [
         'user_subscriptions',
         'user_blocks_edit',

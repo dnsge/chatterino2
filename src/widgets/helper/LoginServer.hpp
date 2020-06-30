@@ -202,7 +202,9 @@ private:
                     QFile file(":/html/login.html");
                     file.open(QIODevice::ReadOnly);
                     boost::beast::ostream(this->response_.body())
-                        << file.readAll().toStdString();
+                        << QString(file.readAll())
+                               .replace("{{ port }}", LoginServer::portNumber())
+                               .toStdString();
                     return;
                 }
             }
