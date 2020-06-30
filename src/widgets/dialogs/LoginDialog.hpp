@@ -1,6 +1,7 @@
 #pragma once
 
 #include "widgets/BaseWidget.hpp"
+#include "widgets/helper/LoginServer.hpp"
 
 #include <QAction>
 #include <QApplication>
@@ -30,6 +31,8 @@ public:
         QPushButton loginButton;
         QPushButton pasteCodeButton;
     } ui_;
+
+    static void parseUserData(const QString &data);
 };
 
 class AdvancedLoginWidget : public QWidget

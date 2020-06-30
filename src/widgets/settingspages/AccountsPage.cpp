@@ -30,11 +30,18 @@ AccountsPage::AccountsPage()
     view->getTableView()->horizontalHeader()->setVisible(false);
     view->getTableView()->horizontalHeader()->setStretchLastSection(true);
 
-    view->addButtonPressed.connect([] {
-        static auto loginWidget = new LoginWidget();
+    static auto loginWidget = new LoginWidget();
+    static auto loginServer = new LoginServer();
+    loginServer->start();
 
+    view->addButtonPressed.connect([] {
         loginWidget->show();
         loginWidget->raise();
+    });
+
+    loginServer->tokenSignal.connect([](QString data) {
+        BasicLoginWidget::parseUserData(data);
+        loginWidget->close();
     });
 
     view->getTableView()->setStyleSheet("background: #333");

@@ -471,6 +471,7 @@ HEADERS += \
     src/widgets/helper/EditableModelView.hpp \
     src/widgets/helper/EffectLabel.hpp \
     src/widgets/helper/Line.hpp \
+    src/widgets/helper/LoginServer.hpp \
     src/widgets/helper/NotebookButton.hpp \
     src/widgets/helper/NotebookTab.hpp \
     src/widgets/helper/QColorPicker.hpp \
