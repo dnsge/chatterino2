@@ -96,7 +96,8 @@ BasicLoginWidget::BasicLoginWidget()
 
     connect(&this->ui_.loginButton, &QPushButton::clicked, []() {
         printf("open login in browser\n");
-        QDesktopServices::openUrl(QUrl("https://chatterino.com/client_login"));
+        QDesktopServices::openUrl(QUrl(QString("http://localhost:%1/login")
+                                           .arg(LoginServer::portNumber())));
     });
 
     connect(&this->ui_.pasteCodeButton, &QPushButton::clicked, [this]() {

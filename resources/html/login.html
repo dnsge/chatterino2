@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <title>Chatterino - Login</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
+    <style>
+      #credentials {
+        display: none;
+      }
+
+      #loading {
+        display: none;
+      }
+
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      body,
+      button {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 22px;
+      }
+
+      div.hcenter {
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+      }
+
+      .title {
+        display: flex;
+        align-items: center;
+        font-size: 44px;
+        margin-bottom: 0.2em;
+      }
+
+      .title>img {
+        margin-right: 22px;
+        height: 40px;
+        width: 40px;
+      }
+
+      p,
+      .title,
+      button {
+        margin: 16px 0;
+      }
+
+      .data {
+        width: 400px;
+        min-height: 100px;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="title">
+      <img src="https://fourtf.com/img/chatterino-icon-64.png">Chatterino</div>
+
+    <div id="loginForm">
+      <p>Press the button below to log in.</p>
+      <div class="hcenter">
+        <button onclick="doRedirect();">Log in (!! do not show on stream !!)</button>
+      </div>
+    </div>
+
+    <div id="loading">
+      <p>Loading username and user id</p>
+      <p class="error"></p>
+    </div>
+
+    <div id="credentials">
+      <p>Copy the text below and press the<br>"Paste login info" button in Chatterino</p>
+      <textarea class="data" hidden></textarea>
+    </div>
+
+    <script type="text/javascript">
+      var clientID = 'cje24hf0084myhm7gdoor9gqw8hcx5';
+      var redirectURI = 'http://localhost:48920/login';
+      var tokenURI = 'http://localhost:48920/token'
+      var scopes = [
+        'user_subscriptions',
+        'user_blocks_edit',
+        'user_blocks_read',
+        'user_follows_edit',
+        'channel_editor', // for /raid
+        'channel_commercial', // for /commercial
+        'channel:moderate',
+        'channel:read:redemptions',
+        'chat:edit',
+        'chat:read',
+        'whispers:read',
+        'whispers:edit',
+      ];
+
+      function doRedirect() {
+        var scopeString = scopes.join(' ');
+        var url = 'https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=' +
+          clientID + '&redirect_uri=' + redirectURI + '&scope=' + encodeURIComponent(
+            scopeString);
+        document.location = url;
+      }
+
+      $(document).ready(function() {
+        var oauthHash = location.hash.substr(1);
+        var oauthToken = oauthHash.substr(oauthHash.indexOf('access_token=')).split('&')[0].split(
+          '=')[1];
+        if (oauthToken) {
+          $('#loginForm').hide();
+          $('#loading').show();
+          const validateURL = 'https://id.twitch.tv/oauth2/validate';
+          $.ajax({
+            dataType: 'json',
+            url: validateURL,
+            headers: {
+              'Authorization': 'OAuth ' + oauthToken,
+            },
+            success: function(data) {
+              const userID = data.user_id;
+              const username = data.login;
+              const dataString = 'oauth_token=' + oauthToken + ';username=' + username +
+                ';user_id=' + userID + ';client_id=' + clientID;
+
+              $.ajax({
+                  url: tokenURI,
+                  method: 'POST',
+                  headers: {
+                    'X-Token-Data': dataString
+                  },
+                  success: function(data) {
+                    // sent token via Chatterino LoginServer
+                    $('#loading').text('Added user to Chatterino. You can close this window.');
+                  },
+                  error: function(xhr, textStatus, error) {
+                    // fallback to normal behavior
+                    $('#credentials').show();
+                    $('#credentials .data').text(dataString).show();
+                    $('.data').select();
+                  }
+                });
+            },
+            error: function(xhr, textStatus, error) {
+              console.log(textStatus);
+              console.log(error);
+              $('#loading .error').text('Error getting user ID. Refresh and try again');
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

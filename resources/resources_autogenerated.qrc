@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="/">    <file>.gitignore</file>
+  <qresource prefix="/">
     <file>avatars/fourtf.png</file>
     <file>avatars/pajlada.png</file>
     <file>buttons/addSplit.png</file>
@@ -37,6 +37,7 @@
     <file>error.png</file>
     <file>examples/moving.gif</file>
     <file>examples/splitting.gif</file>
+    <file>html/login.html</file>
     <file>icon.ico</file>
     <file>icon.png</file>
     <file>licenses/boost_boost.txt</file>

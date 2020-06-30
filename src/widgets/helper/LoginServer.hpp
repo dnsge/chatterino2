@@ -34,7 +34,7 @@ public:
         connect(&this->thread_, SIGNAL(started()), this, SLOT(run()));
     }
 
-    const QString portNumber() const
+    static const QString portNumber()
     {
         return QString::number(LOGIN_PORT_NUM);
     }
@@ -192,7 +192,22 @@ private:
 
         void createResponse()
         {
-            if (this->request_.method() == http::verb::post)
+            if (this->request_.method() == http::verb::get)
+            {
+                if (this->request_.target() == "/login")
+                {
+                    this->response_.result(http::status::ok);
+                    this->response_.set(http::field::content_type, "text/html");
+
+                    QFile file(":/html/login.html");
+                    file.open(QIODevice::ReadOnly);
+                    boost::beast::ostream(this->response_.body())
+                        << file.readAll().toStdString();
+                    return;
+                }
+            }
+
+            else if (this->request_.method() == http::verb::post)
             {
                 if (this->request_.target() == "/token")
                 {
