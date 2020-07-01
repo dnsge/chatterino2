@@ -168,15 +168,6 @@ private:
                 case http::verb::post:
                     this->createResponse();
                     break;
-                case http::verb::options:
-                    // cors preflight
-                    this->response_.result(http::status::ok);
-                    this->response_.set(
-                        http::field::access_control_allow_origin, "*");
-                    this->response_.set(
-                        http::field::access_control_allow_headers,
-                        "X-Token-Data");
-                    break;
                 default:
                     this->response_.result(http::status::bad_request);
                     this->response_.set(http::field::content_type,
@@ -213,12 +204,6 @@ private:
             {
                 if (this->request_.target() == "/token")
                 {
-                    this->response_.set(
-                        http::field::access_control_allow_origin, "*");
-                    this->response_.set(
-                        http::field::access_control_allow_headers,
-                        "X-Token-Data");
-
                     auto header = this->request_.base();
                     if (header.count("X-Token-Data") == 1)
                     {
