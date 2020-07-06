@@ -26,8 +26,22 @@
 
 #ifdef Q_OS_WIN
 #    define META_KEY "Windows"
+#elif defined(Q_OS_MACOS)
+#    define META_KEY "⌃"
 #else
 #    define META_KEY "Meta"
+#endif
+
+#ifdef Q_OS_MACOS
+#    define CTRL_KEY "⌘"
+#else
+#    define CTRL_KEY "Control"
+#endif
+
+#ifdef Q_OS_MACOS
+#    define ALT_KEY "⌥"
+#else
+#    define ALT_KEY "Alt"
 #endif
 
 namespace chatterino {
@@ -37,7 +51,7 @@ namespace {
                                     EnumSetting<Qt::KeyboardModifier> &setting)
     {
         layout.addDropdown<std::underlying_type<Qt::KeyboardModifier>::type>(
-            title, {"None", "Shift", "Control", "Alt", META_KEY}, setting,
+            title, {"None", "Shift", CTRL_KEY, ALT_KEY, META_KEY}, setting,
             [](int index) {
                 switch (index)
                 {
@@ -307,8 +321,14 @@ void GeneralPage::initLayout(SettingsLayout &layout)
     layout.addCheckbox("Restart on crash", s.restartOnCrash);
     if (!BaseWindow::supportsCustomWindowFrame())
     {
+#ifdef Q_OS_MACOS
+        layout.addCheckbox("Show preferences button (⌘+P to show)",
+                           s.hidePreferencesButton, true);
+#else
         layout.addCheckbox("Show preferences button (Ctrl+P to show)",
                            s.hidePreferencesButton, true);
+#endif
+
         layout.addCheckbox("Show user button", s.hideUserButton, true);
     }
 
@@ -419,9 +439,15 @@ void GeneralPage::initLayout(SettingsLayout &layout)
                        s.emojiSet);
 
     layout.addTitle("R9K");
+#ifdef Q_OS_MACOS
+    layout.addDescription(
+        "Hide similar messages by the same user. Temporarily show hidden "
+        "messages by pressing ⌃+H.");
+#else
     layout.addDescription(
         "Hide similar messages by the same user. Temporarily show hidden "
         "messages by pressing Ctrl+H.");
+#endif
     layout.addCheckbox("Hide similar messages", s.similarityEnabled);
     //layout.addCheckbox("Gray out matches", s.colorSimilarDisabled);
     layout.addCheckbox("Hide my own messages", s.hideSimilarMyself);

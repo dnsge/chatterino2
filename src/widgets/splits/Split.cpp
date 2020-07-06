@@ -504,13 +504,23 @@ void Split::changeChannel()
 void Split::explainMoving()
 {
     showTutorialVideo(this, ":/examples/moving.gif", "Moving",
-                      "Hold <Ctrl+Alt> to move splits.\n\nExample:");
+#ifdef Q_OS_MACOS
+                      "Hold <⌘+⌥> to move splits.\n\nExample:"
+#else
+                      "Hold <Ctrl+Alt> to move splits.\n\nExample:"
+#endif
+    );
 }
 
 void Split::explainSplitting()
 {
     showTutorialVideo(this, ":/examples/splitting.gif", "Splitting",
-                      "Hold <Ctrl+Alt> to add new splits.\n\nExample:");
+#ifdef Q_OS_MACOS
+                      "Hold <⌘+⌥> to add new splits.\n\nExample:"
+#else
+                      "Hold <Ctrl+Alt> to add new splits.\n\nExample:"
+#endif
+    );
 }
 
 void Split::popup()
