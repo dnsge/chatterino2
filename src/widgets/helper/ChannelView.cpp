@@ -131,7 +131,7 @@ ChannelView::ChannelView(BaseWidget *parent)
         this->updatePauses();
     });
 
-    auto shortcut = new QShortcut(QKeySequence("Ctrl+C"), this);
+    auto shortcut = new QShortcut(QKeySequence::Copy, this);
     QObject::connect(shortcut, &QShortcut::activated,
                      [this] { crossPlatformCopy(this->getSelectedText()); });
 
