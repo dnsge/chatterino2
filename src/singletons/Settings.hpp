@@ -9,6 +9,7 @@
 #include "controllers/highlights/HighlightPhrase.hpp"
 #include "controllers/moderationactions/ModerationAction.hpp"
 #include "singletons/Toasts.hpp"
+#include "widgets/Notebook.hpp"
 
 namespace chatterino {
 
@@ -78,6 +79,9 @@ public:
     BoolSetting colorizeNicknames = {"/appearance/messages/colorizeNicknames",
                                      false};
 
+    IntSetting tabDirection = {"/appearance/tabDirection",
+                               NotebookTabDirection::Horizontal};
+
     //    BoolSetting collapseLongMessages =
     //    {"/appearance/messages/collapseLongMessages", false};
     IntSetting collpseMessagesMinLines = {
@@ -94,6 +98,8 @@ public:
     BoolSetting enableSmoothScrollingNewMessages = {
         "/appearance/smoothScrollingNewMessages", false};
     BoolSetting boldUsernames = {"/appearance/messages/boldUsernames", false};
+    BoolSetting findAllUsernames = {"/appearance/messages/findAllUsernames",
+                                    false};
     // BoolSetting customizable splitheader
     BoolSetting headerViewerCount = {"/appearance/splitheader/showViewerCount",
                                      false};
@@ -124,6 +130,7 @@ public:
     BoolSetting showParts = {"/behaviour/showParts", false};
     FloatSetting mouseScrollMultiplier = {"/behaviour/mouseScrollMultiplier",
                                           1.0};
+    BoolSetting autoCloseUserPopup = {"/behaviour/autoCloseUserPopup", true};
     // BoolSetting twitchSeperateWriteConnection =
     // {"/behaviour/twitchSeperateWriteConnection", false};
 
@@ -136,6 +143,8 @@ public:
         "/behaviour/autocompletion/prefixOnlyCompletion", true};
     BoolSetting userCompletionOnlyWithAt = {
         "/behaviour/autocompletion/userCompletionOnlyWithAt", false};
+    BoolSetting emoteCompletionWithColon = {
+        "/behaviour/autocompletion/emoteCompletionWithColon", true};
 
     FloatSetting pauseOnHoverDuration = {"/behaviour/pauseOnHoverDuration", 0};
     EnumSetting<Qt::KeyboardModifier> pauseChatModifier = {
@@ -273,6 +282,18 @@ public:
     // Custom URI Scheme
     QStringSetting customURIScheme = {"/external/urischeme"};
 
+    // Image Uploader
+    BoolSetting imageUploaderEnabled = {"/external/imageUploader/enabled",
+                                        false};
+    QStringSetting imageUploaderUrl = {"/external/imageUploader/url", ""};
+    QStringSetting imageUploaderFormField = {
+        "/external/imageUploader/formField", ""};
+    QStringSetting imageUploaderHeaders = {"/external/imageUploader/headers",
+                                           ""};
+    QStringSetting imageUploaderLink = {"/external/imageUploader/link", ""};
+    QStringSetting imageUploaderDeletionLink = {
+        "/external/imageUploader/deletionLink", ""};
+
     /// Misc
     BoolSetting betaUpdates = {"/misc/beta", false};
 #ifdef Q_OS_LINUX
@@ -284,7 +305,7 @@ public:
     QStringSetting currentVersion = {"/misc/currentVersion", ""};
     BoolSetting loadTwitchMessageHistoryOnConnect = {
         "/misc/twitch/loadMessageHistoryOnConnect", true};
-    IntSetting emotesTooltipPreview = {"/misc/emotesTooltipPreview", 0};
+    IntSetting emotesTooltipPreview = {"/misc/emotesTooltipPreview", 1};
     BoolSetting openLinksIncognito = {"/misc/openLinksIncognito", 0};
 
     QStringSetting cachePath = {"/cache/path", ""};
