@@ -14,7 +14,6 @@
 #include "providers/twitch/TwitchAccount.hpp"
 #include "providers/twitch/TwitchChannel.hpp"
 #include "providers/twitch/TwitchHelpers.hpp"
-#include "providers/twitch/TwitchMessageBuilder.hpp"
 #include "util/PostToThread.hpp"
 
 // using namespace Communi;
@@ -337,7 +336,7 @@ void TwitchIrcServer::onMessageSendRequested(TwitchChannel *channel,
             if (this->lastErrorTimeSpeed_ + 30s < now)
             {
                 auto errorMessage =
-                    makeSystemMessage("sending messages too fast");
+                    makeSystemMessage("You are sending messages too quickly.");
 
                 channel->addMessage(errorMessage);
 
@@ -358,7 +357,7 @@ void TwitchIrcServer::onMessageSendRequested(TwitchChannel *channel,
             if (this->lastErrorTimeAmount_ + 30s < now)
             {
                 auto errorMessage =
-                    makeSystemMessage("sending too many messages");
+                    makeSystemMessage("You are sending too many messages.");
 
                 channel->addMessage(errorMessage);
 

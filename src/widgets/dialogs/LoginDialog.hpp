@@ -30,6 +30,7 @@ public:
         QHBoxLayout horizontalLayout;
         QPushButton loginButton;
         QPushButton pasteCodeButton;
+        QLabel unableToOpenBrowserHelper;
     } ui_;
 
     static void parseUserData(const QString &data);
