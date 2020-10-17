@@ -68,8 +68,7 @@ void registerNmHost(Paths &paths)
 #ifdef Q_OS_WIN
         registerWindowsNmManifest(
             paths, "/native-messaging-manifest-chrome.json",
-            "HKCU\\Software\\Google\\Chrome\\NativeMessagingHost"
-            "s\\" +
+            QString("HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\") +
                 NATIVE_HOST_NAME,
             document);
 #endif
@@ -93,7 +92,7 @@ void registerNmHost(Paths &paths)
 #ifdef Q_OS_WIN
         registerWindowsNmManifest(
             paths, "/native-messaging-manifest-firefox.json",
-            "HKCU\\Software\\Mozilla\\NativeMessagingHosts\\" +
+            QString("HKCU\\Software\\Mozilla\\NativeMessagingHosts\\") +
                 NATIVE_HOST_NAME,
             document);
 #endif
