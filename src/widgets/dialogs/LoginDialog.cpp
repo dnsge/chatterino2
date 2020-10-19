@@ -84,7 +84,8 @@ namespace {
 
 BasicLoginWidget::BasicLoginWidget()
 {
-    const QString logInLink = "https://chatterino.com/client_login";
+    const QString logInLink =
+        QString("http://localhost:%1/login").arg(LoginServer::portNumber());
     this->setLayout(&this->ui_.layout);
 
     this->ui_.loginButton.setText("Log in (Opens in browser)");
@@ -116,47 +117,51 @@ BasicLoginWidget::BasicLoginWidget()
     connect(&this->ui_.pasteCodeButton, &QPushButton::clicked, [this]() {
         QClipboard *clipboard = QGuiApplication::clipboard();
         QString clipboardString = clipboard->text();
-        QStringList parameters = clipboardString.split(';');
-
-        QString oauthToken, clientID, username, userID;
-
-        for (const auto &param : parameters)
-        {
-            QStringList kvParameters = param.split('=');
-            if (kvParameters.size() != 2)
-            {
-                continue;
-            }
-            QString key = kvParameters[0];
-            QString value = kvParameters[1];
-
-            if (key == "oauth_token")
-            {
-                oauthToken = value;
-            }
-            else if (key == "client_id")
-            {
-                clientID = value;
-            }
-            else if (key == "username")
-            {
-                username = value;
-            }
-            else if (key == "user_id")
-            {
-                userID = value;
-            }
-            else
-            {
-                qDebug() << "Unknown key in code: " << key;
-            }
-        }
-
-        LogInWithCredentials(userID, username, clientID, oauthToken);
-
+        parseUserData(clipboardString);
         clipboard->clear();
         this->window()->close();
     });
+}
+
+void BasicLoginWidget::parseUserData(const QString &data)
+{
+    QStringList parameters = data.split(';');
+
+    QString oauthToken, clientID, username, userID;
+
+    for (const auto &param : parameters)
+    {
+        QStringList kvParameters = param.split('=');
+        if (kvParameters.size() != 2)
+        {
+            continue;
+        }
+        QString key = kvParameters[0];
+        QString value = kvParameters[1];
+
+        if (key == "oauth_token")
+        {
+            oauthToken = value;
+        }
+        else if (key == "client_id")
+        {
+            clientID = value;
+        }
+        else if (key == "username")
+        {
+            username = value;
+        }
+        else if (key == "user_id")
+        {
+            userID = value;
+        }
+        else
+        {
+            qDebug() << "Unknown key in code: " << key;
+        }
+    }
+
+    LogInWithCredentials(userID, username, clientID, oauthToken);
 }
 
 AdvancedLoginWidget::AdvancedLoginWidget()
