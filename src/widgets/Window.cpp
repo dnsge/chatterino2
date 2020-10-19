@@ -310,10 +310,12 @@ void Window::addShortcuts()
     createWindowShortcut(this, "CTRL+9",
                          [this] { this->notebook_->selectLastTab(); });
 
+#ifndef Q_OS_MACOS
     createWindowShortcut(this, "CTRL+TAB",
                          [this] { this->notebook_->selectNextTab(); });
     createWindowShortcut(this, "CTRL+SHIFT+TAB",
                          [this] { this->notebook_->selectPreviousTab(); });
+#endif
 
     createWindowShortcut(this, "CTRL+N", [this] {
         if (auto page = dynamic_cast<SplitContainer *>(
@@ -377,10 +379,17 @@ void Window::addShortcuts()
         splitContainer->appendSplit(split);
     });
 
-    createWindowShortcut(this, "CTRL+H", [] {
-        getSettings()->hideSimilar.setValue(!getSettings()->hideSimilar);
-        getApp()->windows->forceLayoutChannelViews();
-    });
+    createWindowShortcut(
+        this,
+#ifdef Q_OS_MACOS
+        "Meta+H",
+#else
+        "CTRL+H",
+#endif
+        [] {
+            getSettings()->hideSimilar.setValue(!getSettings()->hideSimilar);
+            getApp()->windows->forceLayoutChannelViews();
+        });
 
     createWindowShortcut(this, "CTRL+K", [this] {
         auto quickSwitcher =

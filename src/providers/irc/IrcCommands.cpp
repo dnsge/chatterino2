@@ -18,10 +18,17 @@ Outcome invokeIrcCommand(const QString &commandName, const QString &allParams,
 
     // STATIC MESSAGES
     static auto staticMessages = std::unordered_map<QString, QString>{
-        {"join", "/join is not supported. Press ctrl+r to change the "
+#ifdef Q_OS_MACOS
+        {"join", "/join is not supported. Press ⌘+R to change the "
                  "channel. If required use /raw JOIN #channel."},
-        {"part", "/part is not supported. Press ctrl+r to change the "
+        {"part", "/part is not supported. Press ⌘+R to change the "
                  "channel. If required use /raw PART #channel."},
+#else
+        {"join", "/join is not supported. Press Ctrl+R to change the "
+                 "channel. If required use /raw JOIN #channel."},
+        {"part", "/part is not supported. Press Ctrl+R to change the "
+                 "channel. If required use /raw PART #channel."},
+#endif
     };
     auto cmd = commandName.toLower();
 
