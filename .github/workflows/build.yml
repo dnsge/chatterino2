@@ -154,7 +154,7 @@ jobs:
   create-release:
     needs: build
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/build/latest')
 
     steps:
       - name: Create release
@@ -163,9 +163,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: github-actions-nightly
-          backup_tag_name: backup-github-actions-nightly
-          release_name: GitHub Actions Nightly Test
+          tag_name: github-latest-build
+          backup_tag_name: backup-github-latest-build
+          release_name: GitHub Latest Build
           body: |
               1 ${{ github.eventName }}
               2 ${{ github.sha }}
