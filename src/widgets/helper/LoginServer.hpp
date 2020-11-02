@@ -235,8 +235,7 @@ private:
         {
             auto self = this->shared_from_this();
 
-            this->response_.set(http::field::content_length,
-                                this->response_.body().size());
+            this->response_.content_length(this->response_.body().size());
 
             http::async_write(this->socket_, this->response_,
                               [self](boost::beast::error_code ec, std::size_t) {
