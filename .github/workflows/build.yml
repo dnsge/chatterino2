@@ -165,7 +165,7 @@ jobs:
         with:
           tag_name: github-latest-build
           backup_tag_name: backup-github-latest-build
-          release_name: GitHub Latest Build
+          release_name: Latest Build
           body: |
               1 ${{ github.event_name }}
               2 ${{ github.sha }}
