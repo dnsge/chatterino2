@@ -20,6 +20,8 @@ public:
         AutoModAllow,
         AutoModDeny,
         OpenAccountsPage,
+        JumpToChannel,
+        Reconnect
     };
 
     Link();

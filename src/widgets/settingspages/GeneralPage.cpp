@@ -598,6 +598,7 @@ void GeneralPage::initLayout(GeneralPageView &layout)
                        s.autoCloseUserPopup);
     layout.addCheckbox("Lowercase domains (anti-phishing)", s.lowercaseDomains);
     layout.addCheckbox("Bold @usernames", s.boldUsernames);
+    layout.addCheckbox("Color @usernames", s.colorUsernames);
     layout.addCheckbox("Try to find usernames without @ prefix",
                        s.findAllUsernames);
     layout.addDropdown<float>(
@@ -626,6 +627,9 @@ void GeneralPage::initLayout(GeneralPageView &layout)
                        s.highlightInlineWhispers);
     layout.addCheckbox("Load message history on connect",
                        s.loadTwitchMessageHistoryOnConnect);
+    // TODO: Change phrasing to use better english once we can tag settings, right now it's kept as history instead of historical so that the setting shows up when the user searches for history
+    layout.addIntInput("Max number of history messages to load on connect",
+                       s.twitchMessageHistoryLimit, 10, 800, 10);
 
     layout.addCheckbox("Enable experimental IRC support (requires restart)",
                        s.enableExperimentalIrc);

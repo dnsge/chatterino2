@@ -386,7 +386,10 @@ std::unique_ptr<QMenu> SplitHeader::createMainMenu()
 
     // reload / reconnect
     if (this->split_->getChannel()->canReconnect())
-        menu->addAction("Reconnect", this, SLOT(reconnect()));
+    {
+        menu->addAction("Reconnect", this, SLOT(reconnect()),
+                        QKeySequence("Ctrl+F5"));
+    }
 
     if (dynamic_cast<TwitchChannel *>(this->split_->getChannel().get()))
     {
@@ -656,7 +659,7 @@ void SplitHeader::updateChannelText()
     this->isLive_ = false;
     this->tooltipText_ = QString();
 
-    auto title = channel->getName();
+    auto title = channel->getLocalizedName();
 
     if (indirectChannel.getType() == Channel::Type::TwitchWatching)
         title = "watching: " + (title.isEmpty() ? "none" : title);
