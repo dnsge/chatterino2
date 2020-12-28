@@ -32,11 +32,11 @@ AccountsPage::AccountsPage()
     view->getTableView()->horizontalHeader()->setVisible(false);
     view->getTableView()->horizontalHeader()->setStretchLastSection(true);
 
+    static auto loginWidget = new LoginWidget(this);
     static auto loginServer = new LoginServer();
     loginServer->start();
 
     view->addButtonPressed.connect([] {
-        static auto loginWidget = new LoginWidget(this);
         loginWidget->show();
         loginWidget->raise();
     });
