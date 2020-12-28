@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - build/latest
     paths-ignore:
       - 'docs/**'
       - '*.md'
