@@ -72,7 +72,6 @@ public:
     explicit ChannelView(BaseWidget *parent = nullptr, Split *split = nullptr,
                          Context context = Context::None);
 
-    void queueUpdate();
     Scrollbar &getScrollBar();
     QString getSelectedText();
     bool hasSelection();
@@ -104,7 +103,6 @@ public:
     bool hasSourceChannel() const;
 
     LimitedQueueSnapshot<MessageLayoutPtr> &getMessagesSnapshot();
-    void queueLayout();
 
     void clearMessages();
 
@@ -164,9 +162,10 @@ private:
     void messageReplaced(size_t index, MessagePtr &replacement);
     void messagesUpdated();
 
-    void performLayout(bool causedByScollbar = false);
+    void performLayout(bool causedByScollbar = false, bool onlyLast = false);
     void layoutVisibleMessages(
         LimitedQueueSnapshot<MessageLayoutPtr> &messages);
+    void layoutLastMessage();
     void updateScrollbar(LimitedQueueSnapshot<MessageLayoutPtr> &messages,
                          bool causedByScrollbar);
 
@@ -298,7 +297,7 @@ private:
 private slots:
     void wordFlagsChanged()
     {
-        queueLayout();
+        performLayout();
         update();
     }
 

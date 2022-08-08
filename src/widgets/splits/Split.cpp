@@ -712,7 +712,7 @@ void Split::setModerationMode(bool value)
 {
     this->moderationMode_ = value;
     this->header_->updateModerationModeIcon();
-    this->view_->queueLayout();
+    this->view_->layout();
 }
 
 bool Split::getModerationMode() const
@@ -757,7 +757,7 @@ void Split::showChangeChannelPopup(const char *dialogTitle, bool empty,
 
 void Split::updateGifEmotes()
 {
-    this->view_->queueUpdate();
+    this->view_->update();
 }
 
 void Split::updateLastReadMessage()

@@ -186,7 +186,7 @@ void ChannelView::initializeScrollbar()
 {
     this->scrollBar_->getCurrentValueChanged().connect([this] {
         this->performLayout(true);
-        this->queueUpdate();
+        this->update();
     });
 }
 
@@ -194,7 +194,7 @@ void ChannelView::initializeSignals()
 {
     this->signalHolder_.managedConnect(getApp()->windows->wordFlagsChanged,
                                        [this] {
-                                           this->queueLayout();
+                                           this->performLayout();
                                            this->update();
                                        });
 
@@ -206,7 +206,7 @@ void ChannelView::initializeSignals()
 
     this->signalHolder_.managedConnect(getApp()->windows->gifRepaintRequested,
                                        [&] {
-                                           this->queueUpdate();
+                                           this->update();
                                        });
 
     this->signalHolder_.managedConnect(
@@ -214,12 +214,12 @@ void ChannelView::initializeSignals()
             if (this->isVisible() &&
                 (channel == nullptr || this->channel_.get() == channel))
             {
-                this->queueLayout();
+                this->performLayout();
             }
         });
 
     this->signalHolder_.managedConnect(getApp()->fonts->fontChanged, [this] {
-        this->queueLayout();
+        this->performLayout();
     });
 }
 
@@ -293,7 +293,7 @@ void ChannelView::updatePauses()
         this->scrollBar_->offset(this->pauseScrollOffset_);
         this->pauseScrollOffset_ = 0;
 
-        this->queueLayout();
+        this->performLayout();
     }
     else if (std::any_of(this->pauses_.begin(), this->pauses_.end(),
                          [](auto &&value) {
@@ -339,7 +339,7 @@ void ChannelView::themeChangedEvent()
 {
     BaseWidget::themeChangedEvent();
 
-    this->queueLayout();
+    this->performLayout();
 }
 
 void ChannelView::scaleChangedEvent(float scale)
@@ -359,32 +359,7 @@ void ChannelView::scaleChangedEvent(float scale)
     }
 }
 
-void ChannelView::queueUpdate()
-{
-    //    if (this->updateTimer.isActive()) {
-    //        this->updateQueued = true;
-    //        return;
-    //    }
-
-    //    this->repaint();
-
-    this->update();
-
-    //    this->updateTimer.start();
-}
-
-void ChannelView::queueLayout()
-{
-    //    if (!this->layoutCooldown->isActive()) {
-    this->performLayout();
-
-    //        this->layoutCooldown->start();
-    //    } else {
-    //        this->layoutQueued = true;
-    //    }
-}
-
-void ChannelView::performLayout(bool causedByScrollbar)
+void ChannelView::performLayout(bool causedByScrollbar, bool onlyLast)
 {
     // BenchmarkGuard benchmark("layout");
 
@@ -394,8 +369,15 @@ void ChannelView::performLayout(bool causedByScrollbar)
     this->showingLatestMessages_ =
         this->scrollBar_->isAtBottom() || !this->scrollBar_->isVisible();
 
-    /// Layout visible messages
-    this->layoutVisibleMessages(messages);
+    if (onlyLast)
+    {
+        this->layoutLastMessage();
+    }
+    else
+    {
+        /// Layout visible messages
+        this->layoutVisibleMessages(messages);
+    }
 
     /// Update scrollbar
     this->updateScrollbar(messages, causedByScrollbar);
@@ -430,7 +412,25 @@ void ChannelView::layoutVisibleMessages(
     }
 
     if (redrawRequired)
-        this->queueUpdate();
+        this->update();
+}
+
+void ChannelView::layoutLastMessage()
+{
+    // fast path for laying out only the last message
+
+    const auto layoutWidth = this->getLayoutWidth();
+    const auto flags = this->getFlags();
+
+    auto message = this->messages_.last();
+    if (message)
+    {
+        bool redrawRequired =
+            (*message)->layout(layoutWidth, this->scale(), flags);
+
+        if (redrawRequired)
+            this->update();
+    }
 }
 
 void ChannelView::updateScrollbar(
@@ -495,7 +495,7 @@ void ChannelView::clearMessages()
     // Clear all stored messages in this chat widget
     this->messages_.clear();
     this->scrollBar_->clearHighlights();
-    this->queueLayout();
+    this->performLayout();
 
     this->lastMessageHasAlternateBackground_ = false;
     this->lastMessageHasAlternateBackgroundReverse_ = true;
@@ -545,7 +545,7 @@ bool ChannelView::hasSelection()
 void ChannelView::clearSelection()
 {
     this->selection_ = Selection();
-    queueLayout();
+    performLayout();
 }
 
 void ChannelView::setEnableScrollingToBottom(bool value)
@@ -732,8 +732,8 @@ void ChannelView::setChannel(ChannelPtr underlyingChannel)
 
     this->underlyingChannel_ = underlyingChannel;
 
-    this->queueLayout();
-    this->queueUpdate();
+    this->performLayout();
+    this->update();
 
     // Notifications
     if (auto tc = dynamic_cast<TwitchChannel *>(underlyingChannel.get()))
@@ -868,7 +868,7 @@ void ChannelView::messageAppended(MessagePtr &message,
     }
 
     this->messageWasAdded_ = true;
-    this->queueLayout();
+    this->performLayout(false, true);
 }
 
 void ChannelView::messageAddedAtStart(std::vector<MessagePtr> &messages)
@@ -913,7 +913,7 @@ void ChannelView::messageAddedAtStart(std::vector<MessagePtr> &messages)
     }
 
     this->messageWasAdded_ = true;
-    this->queueLayout();
+    this->performLayout();
 }
 
 void ChannelView::messageRemoveFromStart(MessagePtr &message)
@@ -930,7 +930,7 @@ void ChannelView::messageRemoveFromStart(MessagePtr &message)
         this->selection_.end.messageIndex--;
     }
 
-    this->queueLayout();
+    this->performLayout();
 }
 
 void ChannelView::messageReplaced(size_t index, MessagePtr &replacement)
@@ -954,7 +954,7 @@ void ChannelView::messageReplaced(size_t index, MessagePtr &replacement)
                                        replacement->getScrollBarHighlight());
 
     this->messages_.replaceItem(message, newItem);
-    this->queueLayout();
+    this->performLayout();
 }
 
 void ChannelView::messagesUpdated()
@@ -989,7 +989,7 @@ void ChannelView::messagesUpdated()
         }
     }
 
-    this->queueLayout();
+    this->performLayout();
 }
 
 void ChannelView::updateLastReadMessage()
@@ -1012,7 +1012,7 @@ void ChannelView::resizeEvent(QResizeEvent *)
 
     this->scrollBar_->raise();
 
-    this->queueLayout();
+    this->performLayout();
 
     this->update();
 }
@@ -1297,7 +1297,7 @@ void ChannelView::leaveEvent(QEvent *)
 
     this->unpause(PauseReason::Mouse);
 
-    this->queueLayout();
+    this->performLayout();
 }
 
 void ChannelView::mouseMoveEvent(QMouseEvent *event)
@@ -1340,7 +1340,7 @@ void ChannelView::mouseMoveEvent(QMouseEvent *event)
         this->setSelection(this->selection_.start,
                            SelectionItem(messageIndex, index));
 
-        this->queueUpdate();
+        this->update();
     }
 
     // message under cursor is collapsed
@@ -1696,7 +1696,7 @@ void ChannelView::mousePressEvent(QMouseEvent *event)
 void ChannelView::mouseReleaseEvent(QMouseEvent *event)
 {
     // find message
-    this->queueLayout();
+    this->performLayout();
 
     std::shared_ptr<MessageLayout> layout;
     QPoint relativePos;
@@ -1805,7 +1805,7 @@ void ChannelView::mouseReleaseEvent(QMouseEvent *event)
         layout->flags.set(MessageLayoutFlag::Expanded);
         layout->flags.set(MessageLayoutFlag::RequiresLayout);
 
-        this->queueLayout();
+        this->performLayout();
         return;
     }
 
@@ -1841,7 +1841,7 @@ void ChannelView::handleMouseClick(QMouseEvent *event,
                 // this->pauseTimeout.stop();
                 // this->pausedTemporarily = false;
 
-                this->queueLayout();
+                this->performLayout();
             }
 
             if (hoveredElement == nullptr)

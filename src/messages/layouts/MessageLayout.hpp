@@ -88,7 +88,7 @@ private:
 
     // methods
     void actuallyLayout(int width, MessageElementFlags flags);
-    void updateBuffer(QPixmap *pixmap, int messageIndex, Selection &selection);
+    void updateBuffer(QPixmap *pixmap);
 };
 
 using MessageLayoutPtr = std::shared_ptr<MessageLayout>;

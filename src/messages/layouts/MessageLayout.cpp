@@ -203,9 +203,9 @@ void MessageLayout::paint(QPainter &painter, int width, int y, int messageIndex,
         DebugCount::increase("message drawing buffers");
     }
 
-    if (!this->bufferValid_ || !selection.isEmpty())
+    if (!this->bufferValid_)
     {
-        this->updateBuffer(pixmap, messageIndex, selection);
+        this->updateBuffer(pixmap);
     }
 
     // draw on buffer
@@ -280,8 +280,7 @@ void MessageLayout::paint(QPainter &painter, int width, int y, int messageIndex,
     this->bufferValid_ = true;
 }
 
-void MessageLayout::updateBuffer(QPixmap *buffer, int /*messageIndex*/,
-                                 Selection & /*selection*/)
+void MessageLayout::updateBuffer(QPixmap *buffer)
 {
     if (buffer->isNull())
         return;
