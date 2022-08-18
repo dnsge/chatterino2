@@ -10,6 +10,7 @@
 #include "providers/twitch/TwitchMessageBuilder.hpp"
 #include "singletons/Settings.hpp"
 #include "util/FormatTime.hpp"
+#include "util/IrcHelpers.hpp"
 #include "util/PostToThread.hpp"
 
 #include <IrcMessage>
@@ -64,6 +65,7 @@ namespace {
 
         auto newMessage = Communi::IrcMessage::fromData(s.toUtf8(), nullptr);
         newMessage->setTags(message->tags());
+        newMessage->setTag("id", generateClearchatUUID(message));
 
         return newMessage;
     }

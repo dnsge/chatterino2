@@ -245,7 +245,7 @@ void Channel::fillInMissingMessages(const std::vector<MessagePtr> &messages)
     // First, collect the ids of every message already present in the channel
     for (auto &msg : snapshot)
     {
-        if (msg->flags.has(MessageFlag::System) || msg->id.isEmpty())
+        if (msg->id.isEmpty())
         {
             continue;
         }
@@ -274,7 +274,8 @@ void Channel::fillInMissingMessages(const std::vector<MessagePtr> &messages)
         bool insertedFlag = false;
         for (auto &snapshotMsg : snapshot)
         {
-            if (snapshotMsg->flags.has(MessageFlag::System))
+            if (snapshotMsg->flags.has(MessageFlag::System) &&
+                snapshotMsg->id.isEmpty())
             {
                 continue;
             }

@@ -2,6 +2,7 @@
 
 #include <IrcMessage>
 #include <QString>
+#include <QUuid>
 
 namespace chatterino {
 
@@ -94,6 +95,21 @@ inline QDateTime calculateMessageTime(const Communi::IrcMessage *message)
 
     // Fallback to current time
     return QDateTime::currentDateTime();
+}
+
+// generateClearchatUUID generates a deterministic UUID from the tags of the
+// given CLEARCHAT message. The same message with the same room-id, target-user-id,
+// and tmi-sent-ts tags will return the same UUID.
+inline QString generateClearchatUUID(const Communi::IrcMessage *message)
+{
+    auto roomId = message->tag("room-id").toString();
+    auto targetId = message->tag("target-user-id").toString();
+    auto timestamp = message->tag("tmi-sent-ts").toString();
+
+    auto data = roomId + "_" + targetId + "_" + timestamp;
+    QUuid uuid = QUuid::createUuidV5("chatterino2", data);
+
+    return uuid.toString();
 }
 
 }  // namespace chatterino

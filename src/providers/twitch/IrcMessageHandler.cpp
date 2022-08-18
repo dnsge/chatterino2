@@ -560,9 +560,9 @@ void IrcMessageHandler::handleClearChatMessage(Communi::IrcMessage *message)
 
     auto timeoutMsg =
         MessageBuilder(timeoutMessage, username, durationInSeconds, false,
-                       calculateMessageTime(message).time())
-            .release();
-    chan->addOrReplaceTimeout(timeoutMsg);
+                       calculateMessageTime(message).time());
+    timeoutMsg.message().id = generateClearchatUUID(message);
+    chan->addOrReplaceTimeout(timeoutMsg.release());
 
     // refresh all
     getApp()->windows->repaintVisibleChatWidgets(chan.get());
@@ -911,8 +911,19 @@ std::vector<MessagePtr> IrcMessageHandler::parseNoticeMessage(
     // default case
     std::vector<MessagePtr> builtMessages;
 
-    builtMessages.emplace_back(makeSystemMessage(
-        message->content(), calculateMessageTime(message).time()));
+    auto messageTime = calculateMessageTime(message).time();
+    auto idTag = message->tag("id");
+
+    if (idTag.toString().isEmpty())
+    {
+        builtMessages.emplace_back(
+            makeSystemMessage(message->content(), messageTime));
+    }
+    else
+    {
+        builtMessages.emplace_back(makeSystemMessage(
+            message->content(), messageTime, idTag.toString()));
+    }
 
     return builtMessages;
 }

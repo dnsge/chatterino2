@@ -28,6 +28,12 @@ MessagePtr makeSystemMessage(const QString &text, const QTime &time)
     return MessageBuilder(systemMessage, text, time).release();
 }
 
+MessagePtr makeSystemMessage(const QString &text, const QTime &time,
+                             const QString &id)
+{
+    return MessageBuilder(systemMessage, text, time, id).release();
+}
+
 EmotePtr makeAutoModBadge()
 {
     return std::make_shared<Emote>(Emote{
@@ -204,6 +210,13 @@ MessageBuilder::MessageBuilder(SystemMessageTag, const QString &text,
     this->message().flags.set(MessageFlag::DoNotTriggerNotification);
     this->message().messageText = text;
     this->message().searchText = text;
+}
+
+MessageBuilder::MessageBuilder(SystemMessageTag, const QString &text,
+                               const QTime &time, const QString &id)
+    : MessageBuilder(systemMessage, text, time)
+{
+    this->message().id = id;
 }
 
 MessageBuilder::MessageBuilder(TimeoutMessageTag, const QString &timeoutUser,
