@@ -25,8 +25,10 @@ const QRect &MessageLayoutElement::getRect() const
 }
 
 MessageLayoutElement::MessageLayoutElement(MessageElement &creator,
-                                           const QSize &size)
+                                           const QSize &size,
+                                           LayoutElementVerticalAlign align)
     : creator_(creator)
+    , align_(align)
 {
     this->rect_.setSize(size);
     DebugCount::increase("message layout elements");
@@ -35,6 +37,11 @@ MessageLayoutElement::MessageLayoutElement(MessageElement &creator,
 MessageLayoutElement::~MessageLayoutElement()
 {
     DebugCount::decrease("message layout elements");
+}
+
+LayoutElementVerticalAlign MessageLayoutElement::getAlign() const
+{
+    return this->align_;
 }
 
 MessageElement &MessageLayoutElement::getCreator() const
@@ -94,6 +101,18 @@ const QString &MessageLayoutElement::getText() const
 FlagsEnum<MessageElementFlag> MessageLayoutElement::getFlags() const
 {
     return this->creator_.getFlags();
+}
+
+VerticalExpandingMessageLayoutElement::VerticalExpandingMessageLayoutElement(
+    MessageElement &creator_, const QSize &initialSize_,
+    LayoutElementVerticalAlign align)
+    : MessageLayoutElement(creator_, initialSize_, align)
+{
+}
+
+void VerticalExpandingMessageLayoutElement::expandBottom(int bottom)
+{
+    this->rect_.setBottom(bottom);
 }
 
 //
@@ -456,7 +475,8 @@ ReplyCurveLayoutElement::ReplyCurveLayoutElement(MessageElement &creator,
                                                  int width, float thickness,
                                                  float radius,
                                                  float neededMargin)
-    : MessageLayoutElement(creator, QSize(width, 0))
+    : VerticalExpandingMessageLayoutElement(creator, QSize(width, 0),
+                                            LayoutElementVerticalAlign::Center)
     , pen_(QColor("#888"), thickness, Qt::SolidLine, Qt::RoundCap)
     , radius_(radius)
     , neededMargin_(neededMargin)
@@ -474,6 +494,7 @@ void ReplyCurveLayoutElement::paint(QPainter &painter)
     // Make sure that our curveRect can always fit the radius curve
     if (curveRect.height() < this->radius_)
     {
+        // Move the top upwards so we can fit the whole radius
         curveRect.setTop(curveRect.top() -
                          (this->radius_ - curveRect.height()));
     }
