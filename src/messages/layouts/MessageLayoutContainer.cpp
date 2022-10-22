@@ -177,8 +177,7 @@ void MessageLayoutContainer::_addElement(MessageLayoutElement *element,
 
     // set move element
     element->setPosition(
-        QPoint(this->currentX_ + xOffset,
-               this->currentY_ - element->getRect().height() + yOffset));
+        QPoint(this->currentX_ + xOffset, this->currentY_ + yOffset));
 
     element->setLine(this->line_);
 
@@ -212,6 +211,9 @@ void MessageLayoutContainer::breakLine()
                   2;
     }
 
+    int lineStart = this->currentY_;
+    int lineEnd = lineStart + this->lineHeight_;
+
     for (size_t i = lineStart_; i < this->elements_.size(); i++)
     {
         MessageLayoutElement *element = this->elements_.at(i).get();
@@ -227,10 +229,29 @@ void MessageLayoutContainer::breakLine()
             yExtra = (COMPACT_EMOTES_OFFSET / 2) * this->scale_;
         }
 
+        int newX = element->getRect().x() + xOffset +
+                   int(this->margin.left * this->scale_);
+
+        int yShift = 0;
+        switch (element->getAlign())
+        {
+            case LayoutElementVerticalAlign::Top:
+                // no adjustment needed
+                yShift = 0;
+                break;
+            case LayoutElementVerticalAlign::Center: {
+                int lineMiddle = (lineEnd - lineStart) / 2;
+                int centeredTop = lineMiddle - element->getRect().height() / 2;
+                yShift = centeredTop;
+            }
+            break;
+            case LayoutElementVerticalAlign::Bottom:
+                yShift = this->lineHeight_ - element->getRect().height();
+                break;
+        }
+
         element->setPosition(
-            QPoint(element->getRect().x() + xOffset +
-                       int(this->margin.left * this->scale_),
-                   element->getRect().y() + this->lineHeight_ + yExtra));
+            QPoint(newX, element->getRect().top() + yShift + yExtra));
     }
 
     if (this->lines_.size() != 0)
@@ -257,7 +278,7 @@ void MessageLayoutContainer::breakLine()
     }
 
     this->currentX_ = 0;
-    this->currentY_ += this->lineHeight_;
+    this->currentY_ = lineEnd;
     this->height_ = this->currentY_ + int(this->margin.bottom * this->scale_);
     this->lineHeight_ = 0;
     this->line_++;
@@ -308,6 +329,71 @@ void MessageLayoutContainer::end()
         this->lines_.back().rect.setBottom(100000);
         this->lines_.back().endIndex = this->elements_.size();
         this->lines_.back().endCharIndex = this->charIndex_;
+
+        // We've laid out the final positions for every element. Now, we can go through
+        // and grow any elements that need to without moving anything around.
+        this->expandElements();
+    }
+}
+
+void MessageLayoutContainer::expandElements()
+{
+    size_t lineSearchStart = 0;
+
+    // Find all elements that are VerticalExpandingMessageLayoutElement instances
+    for (size_t i = 0; i < this->elements_.size(); ++i)
+    {
+        if (auto expand = dynamic_cast<VerticalExpandingMessageLayoutElement *>(
+                this->elements_[i].get()))
+        {
+            // Find the Line that the current element occurs in
+            for (size_t line = lineSearchStart; line < this->lines_.size();
+                 ++line)
+            {
+                const Line &currentLine = this->lines_[line];
+                if (currentLine.startIndex <= i && i < currentLine.endIndex)
+                {
+                    // Make sure there's a line below the line in which the element sits
+                    if (line + 1 < this->lines_.size())
+                    {
+                        this->expandElementWithLine(expand,
+                                                    this->lines_[line + 1]);
+                    }
+
+                    // this->elements_ is sorted by line, so we can ignore any lines before this one
+                    lineSearchStart = line;
+                }
+            }
+        }
+    }
+}
+
+void MessageLayoutContainer::expandElementWithLine(
+    VerticalExpandingMessageLayoutElement *element,
+    const Line &lineBelowElement) const
+{
+    int left = element->getRect().left();
+    int right = element->getRect().right();
+
+    // Find the highest element within left < x < right
+    int top = std::numeric_limits<int>::max();
+    for (int i = lineBelowElement.startIndex; i < lineBelowElement.endIndex;
+         ++i)
+    {
+        const auto &checkElement = this->elements_[i];
+        int checkLeft = checkElement->getRect().left();
+        int checkRight = checkElement->getRect().right();
+        if (right >= checkLeft && checkRight >= left)
+        {
+            // the left-right and checkLeft-checkRight ranges intersect
+            top = std::min(top, checkElement->getRect().top());
+        }
+    }
+
+    if (top != std::numeric_limits<int>::max())
+    {
+        // We can grow the element's bottom to touch the top of the highest element below it
+        element->expandBottom(top);
     }
 }
 
