@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - build/latest
   pull_request:
   workflow_dispatch:
 
@@ -235,11 +236,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: nightly-build
-          backup_tag_name: backup-nightly-build
-          release_name: Nightly Release
+          tag_name: github-latest-build
+          backup_tag_name: github-backup-latest-build
+          release_name: Latest Build
           body: |
-              Nightly Build
+              Latest Build
           prerelease: true
 
       - uses: actions/download-artifact@v3
