@@ -88,6 +88,9 @@ private:
     // helpers
     void _addElement(MessageLayoutElement *element, bool forceAdd = false);
     bool canCollapse();
+    void expandElements();
+    void expandElementWithLine(VerticalExpandingMessageLayoutElement *element,
+                               const Line &lineBelowElement) const;
 
     const Margin margin = {4, 8, 4, 8};
 

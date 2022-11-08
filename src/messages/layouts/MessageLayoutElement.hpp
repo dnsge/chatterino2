@@ -22,13 +22,18 @@ class Image;
 using ImagePtr = std::shared_ptr<Image>;
 enum class FontStyle : uint8_t;
 
+enum class LayoutElementVerticalAlign { Top, Center, Bottom };
+
 class MessageLayoutElement : boost::noncopyable
 {
 public:
-    MessageLayoutElement(MessageElement &creator_, const QSize &size);
+    MessageLayoutElement(
+        MessageElement &creator_, const QSize &size,
+        LayoutElementVerticalAlign align = LayoutElementVerticalAlign::Bottom);
     virtual ~MessageLayoutElement();
 
     const QRect &getRect() const;
+    LayoutElementVerticalAlign getAlign() const;
     MessageElement &getCreator() const;
     void setPosition(QPoint point);
     bool hasTrailingSpace() const;
@@ -59,7 +64,24 @@ private:
     QRect rect_;
     Link link_;
     MessageElement &creator_;
+    LayoutElementVerticalAlign align_;
     int line_{};
+
+    friend class VerticalExpandingMessageLayoutElement;
+};
+
+// A VerticalExpandingMessageLayoutElement is a MessageLayoutElement that,
+// after being laid out into its final position, grows vertically downward
+// to fill any available space. It will never grow to overlap any other element.
+class VerticalExpandingMessageLayoutElement : public MessageLayoutElement
+{
+public:
+    VerticalExpandingMessageLayoutElement(
+        MessageElement &creator_, const QSize &initialSize_,
+        LayoutElementVerticalAlign align = LayoutElementVerticalAlign::Bottom);
+    ~VerticalExpandingMessageLayoutElement() override = default;
+
+    void expandBottom(int bottom);
 };
 
 // IMAGE
@@ -160,7 +182,7 @@ private:
     QString line2;
 };
 
-class ReplyCurveLayoutElement : public MessageLayoutElement
+class ReplyCurveLayoutElement : public VerticalExpandingMessageLayoutElement
 {
 public:
     ReplyCurveLayoutElement(MessageElement &creator, int width, float thickness,
