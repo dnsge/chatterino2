@@ -19,12 +19,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        qt-version: [5.15.2, 5.12.12]
+        qt-version: [5.15.2]
         pch: [true]
-        include:
-          - os: ubuntu-latest
-            qt-version: 5.15.2
-            pch: false
       fail-fast: false
 
     steps:
@@ -140,23 +136,6 @@ jobs:
               ..
             make -j$(nproc)
         shell: bash
-
-      - name: clang-tidy review
-        if: (startsWith(matrix.os, 'ubuntu') && matrix.pch == false && matrix.qt-version == '5.15.2' && github.event_name == 'pull_request')
-        uses: ZedThree/clang-tidy-review@v0.10.1
-        id: review
-        with:
-          build_dir: build
-          config_file: '.clang-tidy'
-          split_workflow: true
-
-      - uses: actions/upload-artifact@v3
-        if: (startsWith(matrix.os, 'ubuntu') && matrix.pch == false && matrix.qt-version == '5.15.2' && github.event_name == 'pull_request')
-        with:
-          name: clang-tidy-review
-          path: |
-            clang-tidy-review-output.json
-            clang-tidy-review-metadata.json
 
       - name: Package - AppImage (Ubuntu)
         if: startsWith(matrix.os, 'ubuntu')
@@ -309,4 +288,3 @@ jobs:
           asset_path: ./macos/chatterino-osx.dmg
           asset_name: chatterino-osx.dmg
           asset_content_type: application/x-bzip2
-
